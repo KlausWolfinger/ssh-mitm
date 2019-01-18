@@ -106,16 +106,28 @@ function get_openssh {
     local gpg_verify=`gpg --verify $openssh_sig $openssh_sources 2>&1`
     if [[ $gpg_verify != *"Good signature from \"Damien Miller <djm@mindrot.org>\""* ]]; then
         echo -e "\n\nError: OpenSSH signature invalid!\n$gpg_verify\n\nTerminating."
-        rm -f $openssh_sources
-        exit -1
+	echo -e "Skip this error and continue ... [YES|NO]\n"
+		read YESNO
+		if [ $YESNO == "NO" ]; then
+			rm -f $openssh_sources
+			exit -1
+		fi
+
+        
     fi
 
     # Check GPG's return value.  0 denotes a valid signature, and 1 is returned
     # on invalid signatures.
     if [[ $? != 0 ]]; then
         echo -e "\n\nError: OpenSSH signature invalid!  Verification returned code: $?\n\nTerminating."
-        rm -f $openssh_sources
-        exit -1
+	echo -e "Skip this error and continue ... [YES|NO]\n"
+		read YESNO
+		if [ $YESNO == "NO" ]; then
+			rm -f $openssh_sources
+			exit -1
+		fi
+
+       
     fi
 
     echo -e "Signature on OpenSSH sources verified.\n"
@@ -123,7 +135,14 @@ function get_openssh {
     local openssh_checksum_actual=`sha256sum $openssh_sources`
     if [[ $openssh_checksum_actual != "$openssh_checksum_expected"* ]]; then
         echo -e "Error: OpenSSH checksum is invalid!  Terminating."
-        exit -1
+	echo -e "Skip this error and continue ... [YES|NO]\n"
+		read YESNO
+		if [ $YESNO == "NO" ]; then
+			rm -f $openssh_sources
+			exit -1
+		fi
+
+       
     fi
 
     return 1
